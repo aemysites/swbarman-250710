@@ -1,0 +1,17 @@
+{
+  "originUrl": "https://www.ilmgmt.com",
+  "urls": [
+    {
+      "url": "https://www.ilmgmt.com",
+      "source": "MANUAL",
+      "targetPath": "/",
+      "id": "fcab5d3ccb842f1b10ac58b992a203e9025e8ca8"
+    }
+  ],
+  "crawlOptions": {
+    "strategy": "manual",
+    "strategiesAttempted": [
+      "MANUAL"
+    ]
+  }
+}
