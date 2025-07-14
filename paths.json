@@ -1,10 +1,10 @@
 {
   "mappings": [
-    "/content/aem-boilerplate/:/",
-    "/content/aem-boilerplate/configuration:/.helix/config.json",
-    "/content/aem-boilerplate/metadata:/metadata.json"
+    "/content/swbarman-250710/:/",
+    "/content/swbarman-250710/configuration:/.helix/config.json",
+    "/content/swbarman-250710/metadata:/metadata.json"
   ],
   "includes": [
-    "/content/aem-boilerplate/"
+    "/content/swbarman-250710/"
   ]
 }
