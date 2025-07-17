@@ -1,41 +1,40 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // 1. Table header
+  // 1. Header row
   const headerRow = ['Columns (columns3)'];
 
-  // 2. Gather direct children and identify content columns
-  const children = Array.from(element.querySelectorAll(':scope > *'));
+  // 2. Get all direct children divs
+  const children = Array.from(element.querySelectorAll(':scope > div'));
 
-  // Get the three main columns (icons + headings)
-  const featureCols = children.filter(el => el.classList.contains('col-md-4'));
-  // There should be three of these
-
-  // Next, find the col-md-6s that have content
-  const contentCols = children.filter(el => el.classList.contains('col-md-6') && el.textContent.trim() !== '');
-  // There should be two of these, each a paragraph
-
-  // Build the table rows
-  const rows = [];
-
-  // First content row: three features side by side
-  if (featureCols.length === 3) {
-    rows.push(featureCols);
-  } else if (featureCols.length > 0) {
-    // Fallback: include whatever is there
-    rows.push(featureCols);
+  // 3. Get the first three columns for the icon + heading
+  // Only keep those that have .fa-stack and an h4.service-heading
+  const columnEls = [];
+  for (let i = 0; i < children.length && columnEls.length < 3; i++) {
+    const col = children[i];
+    if (col.querySelector('.fa-stack') && col.querySelector('.service-heading')) {
+      columnEls.push(col);
+    }
   }
 
-  // Next content rows: for each content col-md-6, create a row of three cells, with content in the center cell
-  contentCols.forEach(col => {
-    rows.push(['', col, '']);
+  // 4. Get the two .col-md-6 divs with <p> inside (for the paragraphs below)
+  const textRows = [];
+  children.forEach(div => {
+    if (div.classList.contains('col-md-6')) {
+      const para = div.querySelector('p');
+      if (para) {
+        textRows.push([div]); // each goes in its own row, single cell
+      }
+    }
   });
 
-  // Assemble cells for createTable
-  const cells = [headerRow, ...rows];
+  // 5. Compose cells: header, the columns, then the full-width text rows
+  const cells = [
+    headerRow,
+    columnEls,
+    ...textRows
+  ];
 
-  // Create the block table
+  // 6. Create and replace
   const table = WebImporter.DOMUtils.createTable(cells, document);
-
-  // Replace the original element
   element.replaceWith(table);
 }

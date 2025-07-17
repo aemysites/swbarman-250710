@@ -1,29 +1,30 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // 1. Get all child divs in order
-  const children = Array.from(element.children);
+  // Get all immediate child divs
+  const children = Array.from(element.querySelectorAll(':scope > div'));
 
-  // 2. Get content for first row (three columns with icon+heading)
-  // These are the .col-md-4 elements in order
-  const columnsRow = children
-    .filter(div => div.classList.contains('col-md-4'));
+  // Extract the icon+heading columns
+  const iconCols = children.filter(div => div.classList.contains('col-md-4'));
+  // Extract the text content columns (centered col-md-6)
+  const textCols = children.filter(div => div.classList.contains('col-md-6'));
 
-  // 3. Find all .col-md-6 blocks for subsequent rows (centered paragraph rows)
-  // These are the multi-column rows (full width), so one per row
-  const contentRows = children.filter(div => div.classList.contains('col-md-6'));
-
-  // 4. Build the table rows
-  // Header row as specified
+  // The header row must be a single cell (not three)
   const headerRow = ['Columns (columns6)'];
-  // Columns row as array of existing elements
-  const tableRows = [headerRow, columnsRow];
 
-  // Each .col-md-6 paragraph is its own row, as a single column
-  contentRows.forEach(col6 => {
-    tableRows.push([col6]);
-  });
+  // The iconCols row is the first content row (three columns)
+  const iconsRow = iconCols;
 
-  // 5. Create and replace
-  const table = WebImporter.DOMUtils.createTable(tableRows, document);
+  // The text rows must match the number of columns (3), with text in the center
+  // and empty strings for left and right
+  const textRows = textCols.map(tc => ['', tc, '']);
+
+  // Compose the table: one header row, then icons row, then text rows
+  const cells = [
+    headerRow,
+    iconsRow,
+    ...textRows
+  ];
+
+  const table = WebImporter.DOMUtils.createTable(cells, document);
   element.replaceWith(table);
 }
