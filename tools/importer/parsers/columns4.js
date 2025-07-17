@@ -1,26 +1,22 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // Header row as per block name
-  const headerRow = ['Columns (columns4)'];
+  // Get all top-level columns
+  const columns = Array.from(element.querySelectorAll(':scope > div'));
 
-  // Get all immediate children columns (divs)
-  const colDivs = Array.from(element.querySelectorAll(':scope > div'));
+  // There are 5 column divs: distribute into a 4 column layout
+  // Row 1: first 4 columns
+  const row1 = columns.slice(0, 4);
+  // Row 2: remaining columns, pad to 4 columns
+  const row2 = columns.slice(4);
+  while (row2.length < 4) row2.push('');
 
-  // According to the HTML, first three are col-md-4 (top row), next two are col-md-6 (bottom row).
-  // Need to output a 4-column table, so pad with empty cells.
-
-  // Top row: indexes 0-2, pad for 4th column
-  const row1 = [colDivs[0], colDivs[1], colDivs[2], ''];
-  // Bottom row: indexes 3-4, pad two trailing columns
-  const row2 = [colDivs[3], colDivs[4], '', ''];
-
-  // Create the columns block table
+  // Build the table with a single-cell header row followed by 4-col rows
   const cells = [
-    headerRow,
+    ['Columns (columns4)'],
     row1,
     row2
   ];
-  const block = WebImporter.DOMUtils.createTable(cells, document);
 
-  element.replaceWith(block);
+  const table = WebImporter.DOMUtils.createTable(cells, document);
+  element.replaceWith(table);
 }

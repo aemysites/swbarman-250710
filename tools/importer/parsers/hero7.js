@@ -1,25 +1,39 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // Header row: must match the block name 'Hero'
+  // 1. Header row
   const headerRow = ['Hero'];
 
-  // Background image row. None present, so empty string.
+  // 2. Background image placeholder
   const bgRow = [''];
 
-  // Find the section with all the content
-  const contentWrapper = element.querySelector('.col-lg-12.text-center');
-  const contentElements = [];
-  if (contentWrapper) {
-    // Collect all of its children in order
-    for (const child of Array.from(contentWrapper.children)) {
-      contentElements.push(child);
+  // 3. Content row: Collect all block-level content from the hero inner wrapper.
+  // Look for the innermost container if present, else fallback to element itself
+  let contentParent = element.querySelector('.intro-text') || element;
+
+  // Collect all child nodes that are elements or non-empty text nodes
+  const content = [];
+  for (const node of contentParent.childNodes) {
+    if (node.nodeType === 1) { // element node
+      content.push(node);
+    } else if (node.nodeType === 3 && node.textContent.trim()) { // text node
+      // Wrap any stray text in a <div> for structure
+      const div = document.createElement('div');
+      div.textContent = node.textContent.trim();
+      content.push(div);
     }
   }
-  // If for some reason, contentElements is empty, provide an empty string for resilience
-  const contentRow = [contentElements.length ? contentElements : ['']];
 
-  // Compose table: only one table per the example
-  const cells = [headerRow, bgRow, contentRow];
+  // If nothing meaningful found, use empty string
+  const contentRow = [content.length > 0 ? content : ['']];
+
+  // Compose the table
+  const cells = [
+    headerRow,
+    bgRow,
+    contentRow
+  ];
+
+  // Create the table and replace the original element
   const block = WebImporter.DOMUtils.createTable(cells, document);
   element.replaceWith(block);
 }
