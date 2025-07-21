@@ -1,5 +1,2 @@
 mountpoints:
-  /:
-    url: "https://author-p141866-e1455422.adobeaemcloud.com/bin/franklin.delivery/aemysites/swbarman-250710/main"
-    type: "markup"
-    suffix: ".html"
+  /: https://adobe.sharepoint.com/:f:/r/sites/AEMDemos/Shared%20Documents/sites/aemy-sites/swbarman-250710
