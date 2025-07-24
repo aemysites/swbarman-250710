@@ -61,6 +61,11 @@ jobs:
             });
 
 
+      - name: Set up sta-sp-delete action dependencies
+        run: |
+          cd .github/actions/sta-sp-delete
+          npm install
+
       - name: Delete SharePoint previews
         id: delete-previews
         uses: ./.github/actions/sta-sp-delete
