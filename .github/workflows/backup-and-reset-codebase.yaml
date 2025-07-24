@@ -8,6 +8,10 @@ on:
         required: false
         type: string
 
+permissions:
+  issues: write
+  contents: write
+
 jobs:
   backup-and-reset:
     runs-on: ubuntu-latest
