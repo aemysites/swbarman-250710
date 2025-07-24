@@ -60,6 +60,7 @@ jobs:
               labels: ['aemy-help', 'aemy-go', 'aemy-merge']
             });
 
+
       - name: Delete SharePoint previews
         id: delete-previews
         uses: ./.github/actions/sta-sp-delete
