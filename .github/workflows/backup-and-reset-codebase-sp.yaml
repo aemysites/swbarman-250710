@@ -103,11 +103,20 @@ jobs:
           thumbprint: ${{ env.AZURE_THUMBPRINT }}
           duration: 3600
 
+      - name: Install yq
+        run: sudo apt-get install -y yq
+
+      - name: Extract root_mountpoint from fstab.yaml
+        id: extract_mountpoint
+        run: |
+          root_mountpoint=$(yq '.mountpoints["/"]' fstab.yaml)
+          echo "root_mountpoint=$root_mountpoint" >> $GITHUB_OUTPUT
+
       - name: Parse mountpoint
         id: mountpoint_data
         uses: ./.github/actions/sta-mountpoint
         with:
-          mountpoint: ${{ github.event.inputs.root_mountpoint }}
+          mountpoint: ${{ steps.extract_mountpoint.outputs.root_mountpoint }}
           mountpoint_type: 'sharepoint'
 
       - name: Move SharePoint content to backup folder
