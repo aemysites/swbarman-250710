@@ -117,6 +117,7 @@ jobs:
         id: filter_urls
         run: |
           urls=$(jq -r '.urls[] | select(.status != "EXCLUDED") | .url' tools/importer/site-urls.json | paste -sd, -)
+          echo "Filtered URLs: $urls"
           echo "urls=$urls" >> $GITHUB_OUTPUT
 
       - name: Delete SharePoint previews
