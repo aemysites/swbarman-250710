@@ -1,26 +1,23 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // Find the main cards block (could be .cards-wrapper or .cards.block)
-  let cardsBlock = element;
-  if (cardsBlock.classList.contains('cards-wrapper')) {
-    const inner = cardsBlock.querySelector('.cards.block');
-    if (inner) cardsBlock = inner;
+  // If wrapped, get the .cards.block element
+  let block = element;
+  if (block.classList.contains('cards-wrapper')) {
+    const found = block.querySelector('.cards.block');
+    if (found) block = found;
   }
 
-  // Find <ul> with cards
-  const ul = cardsBlock.querySelector('ul');
+  // Find the <ul> inside the block
+  const ul = block.querySelector('ul');
   if (!ul) return;
-  const lis = Array.from(ul.children).filter(li => li.tagName === 'LI');
-
-  // Table header
+  const items = Array.from(ul.children).filter(li => li.tagName === 'LI');
   const rows = [['Cards']];
 
-  lis.forEach(li => {
-    // IMAGE/ICON CELL
-    let imageCell = null;
+  for (const li of items) {
+    // Get image: use the <picture> if present, else <img>
+    let imageCell = '';
     const imgDiv = li.querySelector('.cards-card-image');
     if (imgDiv) {
-      // Prefer <picture>, else <img>
       const pic = imgDiv.querySelector('picture');
       if (pic) {
         imageCell = pic;
@@ -30,33 +27,31 @@ export default function parse(element, { document }) {
       }
     }
 
-    // TEXT CONTENT CELL
+    // Get text: all <p> in .cards-card-body, in order
+    let textCell = '';
     const bodyDiv = li.querySelector('.cards-card-body');
-    let textCell = null;
     if (bodyDiv) {
-      // Gather all <p>, <strong>, etc. as they are (reference, not clone)
-      // This will preserve bold, heading etc.
-      const contentEls = Array.from(bodyDiv.childNodes).filter(node =>
-        node.nodeType === Node.ELEMENT_NODE
-      );
-      if (contentEls.length === 1) {
-        textCell = contentEls[0];
-      } else if (contentEls.length > 1) {
-        textCell = contentEls;
+      // Use ONLY direct <p> for each block
+      const ps = Array.from(bodyDiv.querySelectorAll(':scope > p'));
+      if (ps.length === 1) {
+        textCell = ps[0];
+      } else if (ps.length > 1) {
+        textCell = ps;
       } else {
-        // fallback - bodyDiv may have text only
-        textCell = bodyDiv.textContent || '';
+        // fallback if no p: use innerText as one <p>
+        if (bodyDiv.textContent.trim()) {
+          const p = document.createElement('p');
+          p.textContent = bodyDiv.textContent.trim();
+          textCell = p;
+        } else {
+          textCell = '';
+        }
       }
-    } else {
-      textCell = '';
     }
+    rows.push([imageCell, textCell]);
+  }
 
-    rows.push([
-      imageCell,
-      textCell
-    ]);
-  });
-
+  // Replace block with table
   const table = WebImporter.DOMUtils.createTable(rows, document);
-  cardsBlock.replaceWith(table);
+  element.replaceWith(table);
 }
