@@ -87,6 +87,11 @@ jobs:
           cd .github/actions/sta-azure-helper
           npm install
 
+      - name: Set up sta-mountpoint action dependencies
+        run: |
+          cd .github/actions/sta-mountpoint
+          npm install
+
       - name: Create Azure Access Token
         uses: ./.github/actions/sta-azure-helper
         id: azure-auth
