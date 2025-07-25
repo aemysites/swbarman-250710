@@ -122,8 +122,9 @@ jobs:
           urls=$(jq -r '.urls[] | select(.status != "EXCLUDED") | .url' tools/importer/site-urls.json | \
             while read -r url; do
               path=$(echo "$url" | sed -E 's|https?://[^/]+||')
-              if [ -z "$path" ]; then path="/"; fi
-              echo "${base_url}${path}"
+              # Skip empty or root path only
+              if [ -z "$path" ] || [ "$path" = "/" ]; then continue; fi
+              echo "$path"
             done | paste -sd, -)
           echo "Filtered URLs: $urls"
           echo "urls=$urls" >> $GITHUB_OUTPUT
