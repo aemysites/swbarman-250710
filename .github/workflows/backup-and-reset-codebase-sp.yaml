@@ -105,7 +105,7 @@ jobs:
       - name: Extract root_mountpoint from fstab.yaml
         id: extract_mountpoint
         run: |
-          root_mountpoint=$(yq '.mountpoints["/"]' fstab.yaml)
+          root_mountpoint=$(yq '.mountpoints["/"]' fstab.yaml | sed 's/^"//;s/"$//')
           echo "root_mountpoint=$root_mountpoint" >> $GITHUB_OUTPUT
 
       - name: Parse mountpoint
