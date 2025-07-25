@@ -7,10 +7,6 @@ on:
         description: 'Name of the backup branch (optional)'
         required: false
         type: string
-      root_mountpoint:
-        description: 'The mountpoint mapped to the root of the SharePoint site.'
-        required: true
-        type: string
 
 permissions:
   issues: write
