@@ -78,6 +78,11 @@ jobs:
           cd .github/actions/sta-sp-move-to-backup
           npm install
 
+      - name: Set up sta-azure-helper action dependencies
+        run: |
+          cd .github/actions/sta-azure-helper
+          npm install
+
       - name: Create Azure Access Token
         uses: ./.github/actions/sta-azure-helper
         id: azure-auth
