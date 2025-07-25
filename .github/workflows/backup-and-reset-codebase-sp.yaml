@@ -64,7 +64,7 @@ jobs:
           root_mountpoint=$(yq '.mountpoints["/"]' fstab.yaml | sed 's/^"//;s/"$//')
           echo "root_mountpoint=$root_mountpoint" >> $GITHUB_OUTPUT
 
-              - name: Filter URLs for deletion
+      - name: Filter URLs for deletion
         id: filter_urls
         run: |
           repo_name="${GITHUB_REPOSITORY#*/}"
