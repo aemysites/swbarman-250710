@@ -1,4 +1,4 @@
-name: Backup and Reset to E2E Workflow
+name: Backup and Reset Codebase For Sharepoint
 
 on:
   workflow_dispatch:
@@ -11,6 +11,13 @@ on:
 permissions:
   issues: write
   contents: write
+
+env:
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  AZURE_PRIVATE_KEY_BASE64: ${{ secrets.AZURE_PRIVATE_KEY_BASE64 }}
+  AZURE_PFX_PASSWORD: ${{ secrets.AZURE_PFX_PASSWORD }}
+  AZURE_THUMBPRINT: ${{ vars.AZURE_THUMBPRINT }}
 
 jobs:
   backup-and-reset:
@@ -55,8 +62,8 @@ jobs:
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Setup the Repository',
-              body: 'Setup the Repository',
+              title: 'Setup the repository',
+              body: 'Setup the repository',
               labels: ['aemy-help', 'aemy-go', 'aemy-merge']
             });
 
@@ -65,6 +72,31 @@ jobs:
         run: |
           cd .github/actions/sta-sp-delete
           npm install
+
+      - name: Set up sta-sp-move-to-backup action dependencies
+        run: |
+          cd .github/actions/sta-sp-move-to-backup
+          npm install
+
+      - name: Create Azure Access Token
+        uses: ./.github/actions/sta-azure-helper
+        id: azure-auth
+        with:
+          tenant_id: ${{ env.AZURE_TENANT_ID }}
+          client_id: ${{ env.AZURE_CLIENT_ID }}
+          key: ${{ env.AZURE_PRIVATE_KEY_BASE64 }}
+          password: ${{ env.AZURE_PFX_PASSWORD }}
+          thumbprint: ${{ env.AZURE_THUMBPRINT }}
+          duration: 3600
+
+      - name: Move SharePoint content to backup folder
+        id: move-to-backup
+        uses: ./.github/actions/sta-sp-move-to-backup
+        with:
+          token: ${{ steps.azure-auth.outputs.access_token }}
+          sp_host: ${{ fromJSON(steps.mountpoint_data.outputs.data).host }}
+          sp_site_path: ${{ fromJSON(steps.mountpoint_data.outputs.data).site }}
+          sp_folder_path: ${{ fromJSON(steps.mountpoint_data.outputs.data).path }}
 
       - name: Delete SharePoint previews
         id: delete-previews
