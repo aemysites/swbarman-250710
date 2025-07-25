@@ -1,45 +1,60 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // Find the hero block (could be nested)
+  // Helper to get first .hero.block, or fallback to element
   let heroBlock = element.querySelector('.hero.block');
   if (!heroBlock) heroBlock = element;
 
-  // Find the innermost content container (usually div > div > div...)
-  let contentDiv = heroBlock;
-  while (
-    contentDiv &&
-    contentDiv.children.length === 1 &&
-    (contentDiv.children[0].tagName === 'DIV' || contentDiv.children[0].tagName === 'SECTION')
-  ) {
-    contentDiv = contentDiv.children[0];
+  // Drill into possible nested divs to find content root
+  let contentRoot = heroBlock;
+  while (contentRoot.children.length === 1 && contentRoot.children[0].tagName === 'DIV') {
+    contentRoot = contentRoot.children[0];
   }
 
-  // Find and reference the first <picture> or <img>, prioritizing <picture>
-  let imageEl = contentDiv.querySelector('picture');
-  if (!imageEl) imageEl = contentDiv.querySelector('img');
-  // If the image is inside a <p>, use the <p> as the element
-  if (imageEl && imageEl.parentElement.tagName === 'P') imageEl = imageEl.parentElement;
-
-  // Gather the text elements (excluding image/picture)
-  // We want: all direct children of contentDiv except the image element
-  const textNodes = [];
-  Array.from(contentDiv.children).forEach((child) => {
-    if (child !== imageEl) {
-      // If the child is an empty <p>, skip
-      if (!(child.tagName === 'P' && child.textContent.trim() === '')) {
-        textNodes.push(child);
-      }
+  // Find the first <p> that contains a picture/img as background image
+  let heroImg = null;
+  let imgPara = null;
+  for (const node of Array.from(contentRoot.children)) {
+    if (
+      node.tagName === 'P' &&
+      (node.querySelector('picture') || node.querySelector('img'))
+    ) {
+      heroImg = node.querySelector('picture') || node.querySelector('img');
+      imgPara = node;
+      break;
     }
-  });
+  }
 
-  // Construct the cells as per table structure (1 column, 3 rows)
+  // Gather the content after the image (headings, subheading, CTA, etc.)
+  let textContent = [];
+  let foundImg = false;
+  for (const node of Array.from(contentRoot.children)) {
+    if (node === imgPara) {
+      foundImg = true;
+      continue;
+    }
+    if (!foundImg) continue;
+    // Only include elements that have text or are headings (skip empty <p>)
+    if (
+      node.nodeType === Node.ELEMENT_NODE &&
+      (node.textContent.trim() || node.tagName.match(/^H\d/))
+    ) {
+      textContent.push(node);
+    }
+  }
+
+  // If no text content found and no image, try including all children (e.g. in edge cases)
+  if (!heroImg && textContent.length === 0) {
+    textContent = Array.from(contentRoot.children).filter(
+      (node) => node.nodeType === Node.ELEMENT_NODE && node.textContent.trim()
+    );
+  }
+
+  // Build table as per the guidelines
   const cells = [
     ['Hero'],
-    [imageEl ? imageEl : ''],
-    [textNodes.length ? textNodes : '']
+    [heroImg ? heroImg : ''],
+    [textContent.length ? textContent : ''],
   ];
-
-  // Create and replace with block table
   const table = WebImporter.DOMUtils.createTable(cells, document);
   element.replaceWith(table);
 }
