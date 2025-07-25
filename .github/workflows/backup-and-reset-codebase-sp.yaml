@@ -113,6 +113,12 @@ jobs:
           sp_site_path: ${{ fromJSON(steps.mountpoint_data.outputs.data).site }}
           sp_folder_path: ${{ fromJSON(steps.mountpoint_data.outputs.data).path }}
 
+      - name: Filter URLs for deletion
+        id: filter_urls
+        run: |
+          urls=$(jq -r '.urls[] | select(.status != "EXCLUDED") | .url' tools/importer/site-urls.json | paste -sd, -)
+          echo "urls=$urls" >> $GITHUB_OUTPUT
+
       - name: Delete SharePoint previews
         id: delete-previews
         uses: ./.github/actions/sta-sp-delete
@@ -120,9 +126,3 @@ jobs:
           context: |
             {"project": {"owner": "${{ github.repository_owner }}", "repo": "${{ github.event.repository.name }}", "branch": "main"}}
           urls: ${{ steps.filter_urls.outputs.urls }}
-
-      - name: Filter URLs for deletion
-        id: filter_urls
-        run: |
-          urls=$(jq -r '.urls[] | select(.status != "EXCLUDED") | .url' tools/importer/site-urls.json | paste -sd, -)
-          echo "urls=$urls" >> $GITHUB_OUTPUT
