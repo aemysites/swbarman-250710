@@ -68,24 +68,16 @@ jobs:
             });
 
 
-      - name: Set up sta-sp-delete action dependencies
+      - name: Set up dependencies
         run: |
-          cd .github/actions/sta-sp-delete
-          npm install
-
-      - name: Set up sta-sp-move-to-backup action dependencies
-        run: |
-          cd .github/actions/sta-sp-move-to-backup
-          npm install
-
-      - name: Set up sta-azure-helper action dependencies
-        run: |
-          cd .github/actions/sta-azure-helper
-          npm install
-
-      - name: Set up sta-mountpoint action dependencies
-        run: |
+          sudo apt-get install -y yq
           cd .github/actions/sta-mountpoint
+          npm install
+          cd ../sta-azure-helper
+          npm install
+          cd ../sta-sp-move-to-backup
+          npm install
+          cd ../sta-sp-delete
           npm install
 
       - name: Create Azure Access Token
@@ -98,9 +90,6 @@ jobs:
           password: ${{ env.AZURE_PFX_PASSWORD }}
           thumbprint: ${{ env.AZURE_THUMBPRINT }}
           duration: 3600
-
-      - name: Install yq
-        run: sudo apt-get install -y yq
 
       - name: Extract root_mountpoint from fstab.yaml
         id: extract_mountpoint
